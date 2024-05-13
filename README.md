@@ -22,11 +22,11 @@ TG_BOT_TOKEN=some_TG_BOT_token
 #### after everything is set up run:
 
 ```commandline
-docker-compose up -d sota_bot
+docker compose up -d sota_bot
 ```
 
 #### if build **FAILS** (for some reason you messed up with packages or smth) you can rebuild stuff with `--build` flag 
 
 ```commandline
-docker-compose up --build -d  sota_bot
+docker compose up --build -d sota_bot
 ```
