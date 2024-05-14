@@ -1,7 +1,6 @@
 import os
 from groq import Groq
 import logging
-from langdetect import detect
 
 from telegram import Update
 from telegram.ext import (
@@ -27,8 +26,7 @@ model: str = os.environ.get("MODEL") or "llama3-70b-8192"
 
 async def llama_call(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_to_reply = update.message.from_user.name or ''
-    lang = detect(update.message.text)
-    localized_question = f"/{lang}\n {update.message.text}"
+    localized_question = f"/ru\n {update.message.text}"
     generated_msg = await query_groq_for_data(request_sentence=localized_question)
     msg_to_send = f"{user_to_reply}\n{generated_msg}"
     await update.effective_message.reply_text(msg_to_send)
