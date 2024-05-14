@@ -28,7 +28,7 @@ async def llama_call(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     user_to_reply = update.message.from_user.name or ''
     localized_question = f"Ответь на русском. {update.message.text.replace('/llama', '')}"
     generated_msg = await query_groq_for_data(request_sentence=localized_question)
-    logger.debug(f'localized_question: {localized_question}')
+    logger.info(f'localized_question: {localized_question}')
     msg_to_send = f"{user_to_reply}\n{generated_msg}"
     await update.effective_message.reply_text(msg_to_send)
 
