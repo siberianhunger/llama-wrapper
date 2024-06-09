@@ -12,6 +12,8 @@ services:
       TG_BOT_TOKEN: ${TG_BOT_TOKEN}
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
+    networks:
+      - app-network
 
   redis:
     image: bitnami/redis:7.2-debian-12
@@ -21,3 +23,9 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
       - ./cache:/data
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
