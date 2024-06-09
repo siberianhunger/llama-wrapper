@@ -7,7 +7,7 @@ from logger import logger
 
 redis_pool = aioredis.from_url(
     f'redis://{os.environ.get("redis_host") or "localhost"}',
-    password=os.environ.get("redis_host") or 'pepe123',
+    password=os.environ.get("redis_password") or 'pepe123',
     port=6379,
     decode_responses=True
 )

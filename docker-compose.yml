@@ -9,13 +9,13 @@ services:
       GROQ_API_KEY: ${GROQ_API_KEY}
       TG_BOT_TOKEN: ${TG_BOT_TOKEN}
       redis_host: ${redis_host}
+      redis_password: ${REDIS_PASSWORD}
 
   redis:
     image: bitnami/redis:7.2-debian-12
     ports:
       - '6379:6379'
     environment:
-      REDIS_PASSWORD: 'pepe123'
-#      ${REDIS_PASSWORD}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
       - ./cache:/data
