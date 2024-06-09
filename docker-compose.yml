@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "2000:2000"
+    depends_on:
+      - redis
     environment:
       GROQ_API_KEY: ${GROQ_API_KEY}
       TG_BOT_TOKEN: ${TG_BOT_TOKEN}
