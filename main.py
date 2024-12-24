@@ -19,17 +19,45 @@ groq_client = AsyncGroq(api_key=os.environ.get("GROQ_API_KEY"))
 
 model: str = os.environ.get("MODEL") or "llama3-70b-8192"
 
+codeblock_indent_start_marker = "CODEBLOCK_START"
+codeblock_indent_end_marker = "CODEBLOCK_END"
+
 
 def escape_markdown_v2(text: str) -> str:
-    """
-    Escapes Telegram Markdown v2 special characters in the given text.
-    Returns the escaped text.
-    """
-    escape_chars = r"#"
+    escape_chars = r"\_*[]()~`>#+-=|{}.!"
     pattern = f"([{re.escape(escape_chars)}])"
-    escaped_text = re.sub(pattern, r"\\\1", text)
+    return re.sub(pattern, r"\\\1", text)
 
-    return escaped_text
+
+def escape_markdown_in_codeblocks(text: str) -> str:
+    result_parts = []
+    inside_codeblock = False
+    i = 0
+    n = len(text)
+    while i < n:
+        if inside_codeblock:
+            end_index = text.find(codeblock_indent_end_marker, i)
+            if end_index == -1:
+                code_text = text[i:]
+                result_parts.append(escape_markdown_v2(code_text))
+                break
+            else:
+                code_text = text[i:end_index]
+                result_parts.append(escape_markdown_v2(code_text))
+                i = end_index + len(codeblock_indent_end_marker)
+                inside_codeblock = False
+        else:
+            start_index = text.find(codeblock_indent_start_marker, i)
+            if start_index == -1:
+                result_parts.append(text[i:])
+                break
+            else:
+                result_parts.append(text[i:start_index])
+                i = start_index + len(codeblock_indent_start_marker)
+                inside_codeblock = True
+    if i < n:
+        result_parts.append(text[i:])
+    return "".join(result_parts)
 
 
 def prompt_msg_builder(role: Roles, content: str):
@@ -37,7 +65,10 @@ def prompt_msg_builder(role: Roles, content: str):
 
 
 default_system_prompts = (
-    prompt_msg_builder(Roles.system, "If your answer contains any codeblocks use MarkdownV2 to ident it."),
+    prompt_msg_builder(Roles.system, f"If your answer contains any codeblocks use MarkdownV2 to ident it."
+                                     f" All the Markdown indented code should start with"
+                                     f" keyword: {codeblock_indent_end_marker} and end with"
+                                     f" keyword: {codeblock_indent_start_marker}"),
     prompt_msg_builder(Roles.system,
                        "If your answer doesn't have any code or some config files don't use MarkdownV2."),
     prompt_msg_builder(Roles.system, "Don't use chinese characters, only Russian and English is allowed."),
@@ -68,7 +99,8 @@ async def llama_with_context(update: Update, context: ContextTypes.DEFAULT_TYPE)
         generated_msg = await query_groq_for_data([prompt_msg_builder(Roles.user, parsed_question)])
         await set_messages_in_cache(cache_key, [prompt_msg_builder(Roles.assistant, generated_msg.content)])
     msg_to_send = f"{update.message.from_user.name}\n{generated_msg.content}"
-    await update.effective_message.reply_text(escape_markdown_v2(msg_to_send), parse_mode=telegram.constants.ParseMode.MARKDOWN_V2)
+    await update.effective_message.reply_text(escape_markdown_v2(msg_to_send),
+                                              parse_mode=telegram.constants.ParseMode.MARKDOWN_V2)
 
 
 async def lleng(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -95,7 +127,8 @@ async def llama_ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.info(f'llama_ask: {parsed_question}')
     generated_msg = await query_groq_for_data([prompt_msg_builder(Roles.user, parsed_question)])
     msg_to_send = f"{update.message.from_user.name}\n{generated_msg.content}"
-    await update.effective_message.reply_text(escape_markdown_v2(msg_to_send), parse_mode=telegram.constants.ParseMode.MARKDOWN_V2)
+    await update.effective_message.reply_text(escape_markdown_v2(msg_to_send),
+                                              parse_mode=telegram.constants.ParseMode.MARKDOWN_V2)
 
 
 async def query_groq_for_data(user_prompts: list[dict], sys_promts=default_system_prompts) -> ChatCompletionMessage:
