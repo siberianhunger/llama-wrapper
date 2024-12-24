@@ -1,4 +1,6 @@
 import os
+
+import telegram.constants
 from groq import AsyncGroq
 from groq.types.chat import ChatCompletionMessage
 from telegram import Update
@@ -23,7 +25,7 @@ def escape_markdown_v2(text: str) -> str:
     Escapes Telegram Markdown v2 special characters in the given text.
     Returns the escaped text.
     """
-    escape_chars = r"\_*[]()~`>#+-=|{}.!"
+    escape_chars = r"#"
     pattern = f"([{re.escape(escape_chars)}])"
     escaped_text = re.sub(pattern, r"\\\1", text)
 
@@ -66,7 +68,7 @@ async def llama_with_context(update: Update, context: ContextTypes.DEFAULT_TYPE)
         generated_msg = await query_groq_for_data([prompt_msg_builder(Roles.user, parsed_question)])
         await set_messages_in_cache(cache_key, [prompt_msg_builder(Roles.assistant, generated_msg.content)])
     msg_to_send = f"{update.message.from_user.name}\n{generated_msg.content}"
-    await update.effective_message.reply_text(escape_markdown_v2(msg_to_send), parse_mode='MarkdownV2')
+    await update.effective_message.reply_text(escape_markdown_v2(msg_to_send), parse_mode=telegram.constants.ParseMode.MARKDOWN_V2)
 
 
 async def lleng(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -84,8 +86,8 @@ async def lleng(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         logger.info(f'no cache for conversation found!')
         generated_msg = await query_groq_for_data([prompt_msg_builder(Roles.user, parsed_question)], eng_system_prompts)
         await set_messages_in_cache(cache_key, [prompt_msg_builder(Roles.assistant, generated_msg.content)])
-    msg_to_send = f"{update.message.from_user.name}\n{generated_msg.content}"
-    await update.effective_message.reply_text(escape_markdown_v2(msg_to_send), parse_mode='MarkdownV2')
+    msg_to_send = f"{update.message.from_user.name}\n{escape_markdown_v2(generated_msg.content)}"
+    await update.effective_message.reply_text(msg_to_send, parse_mode=telegram.constants.ParseMode.MARKDOWN_V2)
 
 
 async def llama_ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -93,7 +95,7 @@ async def llama_ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.info(f'llama_ask: {parsed_question}')
     generated_msg = await query_groq_for_data([prompt_msg_builder(Roles.user, parsed_question)])
     msg_to_send = f"{update.message.from_user.name}\n{generated_msg.content}"
-    await update.effective_message.reply_text(escape_markdown_v2(msg_to_send), parse_mode='MarkdownV2')
+    await update.effective_message.reply_text(escape_markdown_v2(msg_to_send), parse_mode=telegram.constants.ParseMode.MARKDOWN_V2)
 
 
 async def query_groq_for_data(user_prompts: list[dict], sys_promts=default_system_prompts) -> ChatCompletionMessage:
