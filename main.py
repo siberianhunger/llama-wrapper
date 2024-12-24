@@ -53,7 +53,7 @@ async def llama_with_context(update: Update, context: ContextTypes.DEFAULT_TYPE)
         generated_msg = await query_groq_for_data([prompt_msg_builder(Roles.user, parsed_question)])
         await set_messages_in_cache(cache_key, [prompt_msg_builder(Roles.assistant, generated_msg.content)])
     msg_to_send = f"{update.message.from_user.name}\n{generated_msg.content}"
-    await update.effective_message.reply_text(msg_to_send)
+    await update.effective_message.reply_text(msg_to_send, parse_mode='MarkdownV2')
 
 
 async def lleng(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -72,7 +72,7 @@ async def lleng(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         generated_msg = await query_groq_for_data([prompt_msg_builder(Roles.user, parsed_question)], eng_system_prompts)
         await set_messages_in_cache(cache_key, [prompt_msg_builder(Roles.assistant, generated_msg.content)])
     msg_to_send = f"{update.message.from_user.name}\n{generated_msg.content}"
-    await update.effective_message.reply_text(msg_to_send)
+    await update.effective_message.reply_text(msg_to_send, parse_mode='MarkdownV2')
 
 
 async def llama_ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -80,7 +80,7 @@ async def llama_ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.info(f'llama_ask: {parsed_question}')
     generated_msg = await query_groq_for_data([prompt_msg_builder(Roles.user, parsed_question)])
     msg_to_send = f"{update.message.from_user.name}\n{generated_msg.content}"
-    await update.effective_message.reply_text(msg_to_send)
+    await update.effective_message.reply_text(msg_to_send, parse_mode='MarkdownV2')
 
 
 async def query_groq_for_data(user_prompts: list[dict], sys_promts=default_system_prompts) -> ChatCompletionMessage:
