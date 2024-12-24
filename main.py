@@ -11,10 +11,23 @@ from telegram.ext import (
 from models import Roles
 from logger import logger
 from redis_client import get_cached_messages, set_messages_in_cache
+import re
 
 groq_client = AsyncGroq(api_key=os.environ.get("GROQ_API_KEY"))
 
 model: str = os.environ.get("MODEL") or "llama3-70b-8192"
+
+
+def escape_markdown_v2(text: str) -> str:
+    """
+    Escapes Telegram Markdown v2 special characters in the given text.
+    Returns the escaped text.
+    """
+    escape_chars = r"\_*[]()~`>#+-=|{}.!"
+    pattern = f"([{re.escape(escape_chars)}])"
+    escaped_text = re.sub(pattern, r"\\\1", text)
+
+    return escaped_text
 
 
 def prompt_msg_builder(role: Roles, content: str):
@@ -53,7 +66,7 @@ async def llama_with_context(update: Update, context: ContextTypes.DEFAULT_TYPE)
         generated_msg = await query_groq_for_data([prompt_msg_builder(Roles.user, parsed_question)])
         await set_messages_in_cache(cache_key, [prompt_msg_builder(Roles.assistant, generated_msg.content)])
     msg_to_send = f"{update.message.from_user.name}\n{generated_msg.content}"
-    await update.effective_message.reply_text(msg_to_send, parse_mode='MarkdownV2')
+    await update.effective_message.reply_text(escape_markdown_v2(msg_to_send), parse_mode='MarkdownV2')
 
 
 async def lleng(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -72,7 +85,7 @@ async def lleng(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         generated_msg = await query_groq_for_data([prompt_msg_builder(Roles.user, parsed_question)], eng_system_prompts)
         await set_messages_in_cache(cache_key, [prompt_msg_builder(Roles.assistant, generated_msg.content)])
     msg_to_send = f"{update.message.from_user.name}\n{generated_msg.content}"
-    await update.effective_message.reply_text(msg_to_send, parse_mode='MarkdownV2')
+    await update.effective_message.reply_text(escape_markdown_v2(msg_to_send), parse_mode='MarkdownV2')
 
 
 async def llama_ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -80,7 +93,7 @@ async def llama_ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.info(f'llama_ask: {parsed_question}')
     generated_msg = await query_groq_for_data([prompt_msg_builder(Roles.user, parsed_question)])
     msg_to_send = f"{update.message.from_user.name}\n{generated_msg.content}"
-    await update.effective_message.reply_text(msg_to_send, parse_mode='MarkdownV2')
+    await update.effective_message.reply_text(escape_markdown_v2(msg_to_send), parse_mode='MarkdownV2')
 
 
 async def query_groq_for_data(user_prompts: list[dict], sys_promts=default_system_prompts) -> ChatCompletionMessage:
