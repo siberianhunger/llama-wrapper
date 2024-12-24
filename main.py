@@ -65,10 +65,10 @@ def prompt_msg_builder(role: Roles, content: str):
 
 
 default_system_prompts = (
-    prompt_msg_builder(Roles.system, f"If your answer contains any codeblocks use MarkdownV2 to ident it."
-                                     f" All the Markdown indented code should start with"
-                                     f" keyword: {codeblock_indent_end_marker} and end with"
-                                     f" keyword: {codeblock_indent_start_marker}"),
+    prompt_msg_builder(Roles.system, f"""If your answer contains any codeblocks use MarkdownV2 to ident it.
+                                     All the Markdown indented code should start with 
+                                     keyword: {codeblock_indent_end_marker} and end with 
+                                     keyword: {codeblock_indent_start_marker}"""),
     prompt_msg_builder(Roles.system,
                        "If your answer doesn't have any code or some config files don't use MarkdownV2."),
     prompt_msg_builder(Roles.system, "Don't use chinese characters, only Russian and English is allowed."),
@@ -76,7 +76,10 @@ default_system_prompts = (
 )
 
 eng_system_prompts = (
-    prompt_msg_builder(Roles.system, "If your answer contains any codeblocks use MarkdownV2 to ident it."),
+    prompt_msg_builder(Roles.system, f"""If your answer contains any codeblocks use MarkdownV2 to ident it.
+                                     All the Markdown indented code should start with 
+                                     keyword: {codeblock_indent_end_marker} and end with 
+                                     keyword: {codeblock_indent_start_marker}"""),
     prompt_msg_builder(Roles.system,
                        "If your answer doesn't have any code or some config files don't use MarkdownV2."),
     prompt_msg_builder(Roles.system, "Don't use chinese or Russian characters, only English is allowed."),
