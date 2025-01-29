@@ -19,9 +19,6 @@ groq_client = AsyncGroq(api_key=os.environ.get("GROQ_API_KEY"))
 
 model: str = os.environ.get("MODEL") or "llama3-70b-8192"
 
-codeblock_indent_start_marker = "CODEBLOCK_START"
-codeblock_indent_end_marker = "CODEBLOCK_END"
-
 
 def escape_markdown_v2(text: str) -> str:
     escape_chars = r"\_*[]()~`>#+-=|{}.!"
@@ -29,46 +26,11 @@ def escape_markdown_v2(text: str) -> str:
     return re.sub(pattern, r"\\\1", text)
 
 
-def escape_markdown_in_codeblocks(text: str) -> str:
-    result_parts = []
-    inside_codeblock = False
-    i = 0
-    n = len(text)
-    while i < n:
-        if inside_codeblock:
-            end_index = text.find(codeblock_indent_end_marker, i)
-            if end_index == -1:
-                code_text = text[i:]
-                result_parts.append(escape_markdown_v2(code_text))
-                break
-            else:
-                code_text = text[i:end_index]
-                result_parts.append(escape_markdown_v2(code_text))
-                i = end_index + len(codeblock_indent_end_marker)
-                inside_codeblock = False
-        else:
-            start_index = text.find(codeblock_indent_start_marker, i)
-            if start_index == -1:
-                result_parts.append(text[i:])
-                break
-            else:
-                result_parts.append(text[i:start_index])
-                i = start_index + len(codeblock_indent_start_marker)
-                inside_codeblock = True
-    if i < n:
-        result_parts.append(text[i:])
-    return "".join(result_parts)
-
-
 def prompt_msg_builder(role: Roles, content: str):
     return {"role": role, "content": content}
 
 
 default_system_prompts = (
-    prompt_msg_builder(Roles.system, f"""If your answer contains any codeblocks use MarkdownV2 to ident it.
-                                     All the Markdown indented code should start with 
-                                     keyword: {codeblock_indent_start_marker} and end with 
-                                     keyword: {codeblock_indent_end_marker}"""),
     prompt_msg_builder(Roles.system,
                        "If your answer doesn't have any code or some config files don't use MarkdownV2."),
     prompt_msg_builder(Roles.system, "Don't use chinese characters, only Russian and English is allowed."),
@@ -76,10 +38,6 @@ default_system_prompts = (
 )
 
 eng_system_prompts = (
-    prompt_msg_builder(Roles.system, f"""If your answer contains any codeblocks use MarkdownV2 to ident it.
-                                     All the Markdown indented code should start with 
-                                     keyword: {codeblock_indent_start_marker} and end with 
-                                     keyword: {codeblock_indent_end_marker}"""),
     prompt_msg_builder(Roles.system,
                        "If your answer doesn't have any code or some config files don't use MarkdownV2."),
     prompt_msg_builder(Roles.system, "Don't use chinese or Russian characters, only English is allowed."),
