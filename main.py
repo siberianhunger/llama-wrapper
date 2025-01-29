@@ -48,12 +48,12 @@ async def llama_with_context(update: Update, context: ContextTypes.DEFAULT_TYPE)
         msg_list = [*cached_msgs, prompt_msg_builder(Roles.user, parsed_question)]
         logger.info(f'full msg list: {msg_list}')
         generated_msg = await query_groq_for_data(msg_list)
-        await set_messages_in_cache(cache_key, [*msg_list, prompt_msg_builder(Roles.assistant, generated_msg.content)])
+        await set_messages_in_cache(cache_key, [*msg_list, prompt_msg_builder(Roles.assistant, generated_msg)])
     else:
         logger.info(f'no cache for conversation found!')
         generated_msg = await query_groq_for_data([prompt_msg_builder(Roles.user, parsed_question)])
-        await set_messages_in_cache(cache_key, [prompt_msg_builder(Roles.assistant, generated_msg.content)])
-    msg_to_send = f"{update.message.from_user.name}\n{generated_msg.content}"
+        await set_messages_in_cache(cache_key, [prompt_msg_builder(Roles.assistant, generated_msg)])
+    msg_to_send = f"{update.message.from_user.name}\n{generated_msg}"
     await update.effective_message.reply_text(msg_to_send)
 
 
@@ -67,12 +67,12 @@ async def lleng(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         msg_list = [*cached_msgs, prompt_msg_builder(Roles.user, parsed_question)]
         logger.info(f'full msg list: {msg_list}')
         generated_msg = await query_groq_for_data(msg_list, eng_system_prompts)
-        await set_messages_in_cache(cache_key, [*msg_list, prompt_msg_builder(Roles.assistant, generated_msg.content)])
+        await set_messages_in_cache(cache_key, [*msg_list, prompt_msg_builder(Roles.assistant, generated_msg)])
     else:
         logger.info(f'no cache for conversation found!')
         generated_msg = await query_groq_for_data([prompt_msg_builder(Roles.user, parsed_question)], eng_system_prompts)
-        await set_messages_in_cache(cache_key, [prompt_msg_builder(Roles.assistant, generated_msg.content)])
-    msg_to_send = f"{update.message.from_user.name}\n{generated_msg.content}"
+        await set_messages_in_cache(cache_key, [prompt_msg_builder(Roles.assistant, generated_msg)])
+    msg_to_send = f"{update.message.from_user.name}\n{generated_msg}"
     await update.effective_message.reply_text(msg_to_send)
 
 
@@ -80,7 +80,7 @@ async def llama_ask(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     parsed_question = update.message.text.replace('/llask', '')
     logger.info(f'llama_ask: {parsed_question}')
     generated_msg = await query_groq_for_data([prompt_msg_builder(Roles.user, parsed_question)])
-    msg_to_send = f"{update.message.from_user.name}\n{generated_msg.content}"
+    msg_to_send = f"{update.message.from_user.name}\n{generated_msg}"
     await update.effective_message.reply_text(msg_to_send)
 
 
@@ -88,7 +88,7 @@ async def think(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     parsed_question = update.message.text.replace('/llask', '')
     logger.info(f'llama_ask: {parsed_question}')
     generated_msg = await query_groq_for_data([prompt_msg_builder(Roles.user, parsed_question)], think=True)
-    msg_to_send = f"{update.message.from_user.name}\n{generated_msg.content}"
+    msg_to_send = f"{update.message.from_user.name}\n{generated_msg}"
     await update.effective_message.reply_text(msg_to_send)
 
 
@@ -110,7 +110,7 @@ async def query_groq_for_data(
         messages=[*sys_promts, *user_prompts],
         model=model,
     )
-    response_text = chat_completion.choices[0].message
+    response_text = chat_completion.choices[0].message.content
     if think:
         return response_text
     return remove_think_tags(response_text)
