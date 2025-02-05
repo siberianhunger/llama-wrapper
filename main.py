@@ -113,7 +113,7 @@ async def query_groq_for_data(
     response_text = chat_completion.choices[0].message.content
     if think:
         return response_text
-    return remove_think_tags(response_text)
+    return remove_think_tags(response_text).strip()
 
 
 def main() -> None:
